@@ -64,26 +64,6 @@ st.title("Unlock the Puzzle Mahal!")
 # Check if all pieces are unlocked
 all_unlocked = all(piece["unlocked"] for piece in st.session_state['puzzle_pieces'])
 
-if all_unlocked:
-    # Show the complete image if all pieces are unlocked
-    st.image('puzzle.png', use_column_width=True)
-    st.success("Congratulations mahal ko! You've completed the puzzle!")
-else:
-    # Display the puzzle pieces (12x7 grid)
-    cols = 12
-    for i in range(7):
-        cols_images = st.columns(cols)
-        for j in range(cols):
-            idx = i * cols + j
-            if idx < len(st.session_state['puzzle_pieces']):
-                piece = st.session_state['puzzle_pieces'][idx]
-                if piece["unlocked"]:
-                    cols_images[j].image(piece["url"], use_column_width=True)
-                else:
-                    # Display a specific placeholder for each locked piece
-                    placeholder_path = f"pieces/placeholder_{idx + 1}.png"
-                    cols_images[j].image(placeholder_path, use_column_width=True)
-
 # Find the earliest date with locked pieces
 unlock_date = min((date for date in secret_words.keys() if date not in st.session_state['unlocked_dates']), default=None)
 
@@ -107,8 +87,27 @@ if unlock_date and not all_unlocked:
                 st.warning("No attempts left for today. Please try again tomorrow.")
     else:
         st.info("Great job today mahal! Come back tomorrow for more!")
-elif all_unlocked:
-    st.info("You got all the pieces!")
 else:
     st.info("Great job today mahal! Come back tomorrow for more!")
+
+if all_unlocked:
+    # Show the complete image if all pieces are unlocked
+    st.image('puzzle.png', use_column_width=True)
+    st.success("Congratulations mahal ko! You've completed the puzzle!")
+else:
+    # Display the puzzle pieces (12x7 grid)
+    cols = 12
+    for i in range(7):
+        cols_images = st.columns(cols)
+        for j in range(cols):
+            idx = i * cols + j
+            if idx < len(st.session_state['puzzle_pieces']):
+                piece = st.session_state['puzzle_pieces'][idx]
+                if piece["unlocked"]:
+                    cols_images[j].image(piece["url"], use_column_width=True)
+                else:
+                    # Display a specific placeholder for each locked piece
+                    placeholder_path = f"pieces/placeholder_{idx + 1}.png"
+                    cols_images[j].image(placeholder_path, use_column_width=True)
+
 
