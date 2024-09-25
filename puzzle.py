@@ -59,7 +59,7 @@ def check_word(input_word, unlock_date):
     return False, st.session_state['puzzle_pieces']
 
 # Title of the app
-st.title("Unlock the Puzzle mahal!")
+st.title("Unlock the Puzzle Mahal!")
 
 # Check if all pieces are unlocked
 all_unlocked = all(piece["unlocked"] for piece in st.session_state['puzzle_pieces'])
