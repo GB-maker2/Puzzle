@@ -45,7 +45,7 @@ def check_word(input_word, unlock_date):
     if st.session_state['attempts'] >= 3:
         return False, st.session_state['puzzle_pieces']
     
-    if input_word == secret_words.get(unlock_date):
+    if input_word.lower() == secret_words.get(unlock_date):
         # Unlock the next piece in the shuffled order
         next_piece_index = st.session_state['unlock_order'].pop(0)  # Get the next piece index
         st.session_state['puzzle_pieces'][next_piece_index]["unlocked"] = True
