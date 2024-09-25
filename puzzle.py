@@ -87,20 +87,28 @@ else:
 # Find the earliest date with locked pieces
 unlock_date = min((date for date in secret_words.keys() if date not in st.session_state['unlocked_dates']), default=None)
 
+# Get today's date in the same format as the unlock dates
+today = datetime.datetime.now().strftime("%d/%m/%Y")
+
 if unlock_date and not all_unlocked:
-    st.write(f"Unlock the piece from {unlock_date}:")
-    input_word = st.text_input(f"Enter the secret word for {unlock_date}:")
-    if st.button("Submit"):
-        if st.session_state['attempts'] < 3:
-            correct, updated_pieces = check_word(input_word, unlock_date)
-            if correct:
-                st.success("Correct! A new piece has been unlocked.")
-                refresh_page()  # Refresca la página
+    # Check if the unlock date is today or earlier
+    if datetime.datetime.strptime(unlock_date, "%d/%m/%Y") <= datetime.datetime.strptime(today, "%d/%m/%Y"):
+        st.write(f"Unlock the piece from {unlock_date}:")
+        input_word = st.text_input(f"Enter the secret word for {unlock_date}:")
+        if st.button("Submit"):
+            if st.session_state['attempts'] < 3:
+                correct, updated_pieces = check_word(input_word, unlock_date)
+                if correct:
+                    st.success("Correct! A new piece has been unlocked.")
+                    refresh_page()  # Refresh the page
+                else:
+                    st.error(f"Incorrect word. You have {3 - st.session_state['attempts']} attempts left.")
             else:
-                st.error(f"Incorrect word. You have {3 - st.session_state['attempts']} attempts left.")
-        else:
-            st.warning("No attempts left for today. Please try again tomorrow.")
+                st.warning("No attempts left for today. Please try again tomorrow.")
+    else:
+        st.info("Great job today mahal! Come back tomorrow for more!")
 elif all_unlocked:
     st.info("You got all the pieces!")
 else:
     st.info("Great job today mahal! Come back tomorrow for more!")
+
