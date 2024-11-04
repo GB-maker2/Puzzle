@@ -31,6 +31,17 @@ def save_progress(filename, data):
     with open(filename, 'w') as f:
         json.dump(data, f)
 
+# Reset progress function
+def reset_progress():
+    # Reset to default values
+    default_progress = {
+        "unlocked_dates": [],
+        "last_unlocked_piece": None,
+        "first_piece_unlocked": False,
+        "unlock_order": []  # Ensure this is initialized
+    }
+    save_progress(progress_file, default_progress)
+
 # Initialize or load persistent data
 progress_file = 'progress.json'
 progress_data = load_progress(progress_file)
@@ -100,6 +111,11 @@ def check_word(input_word, unlock_date):
 
 # Title of the app
 st.title("Unlock the Puzzle Mahal!")
+
+# Add a button to reset progress
+if st.button("Reset Progress"):
+    reset_progress()
+    st.success("Progress has been reset!")
 
 # Check if all pieces are unlocked
 all_unlocked = all(piece["unlocked"] for piece in st.session_state['puzzle_pieces'])
