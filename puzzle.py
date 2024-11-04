@@ -112,11 +112,6 @@ def check_word(input_word, unlock_date):
 # Title of the app
 st.title("Unlock the Puzzle Mahal!")
 
-# Add a button to reset progress
-if st.button("Reset Progress"):
-    reset_progress()
-    st.success("Progress has been reset!")
-
 # Check if all pieces are unlocked
 all_unlocked = all(piece["unlocked"] for piece in st.session_state['puzzle_pieces'])
 
@@ -134,6 +129,11 @@ if next_unlock_date and not all_unlocked:
         st.info("Great job today mahal! Come back tomorrow for more!")
 else:
     st.info("Great job today mahal! Come back tomorrow for more!")
+
+# Add a button to reset progress
+if st.button("Reset Progress"):
+    reset_progress()
+    st.success("Progress has been reset!")
 
 if all_unlocked:
     # Show the complete image if all pieces are unlocked
