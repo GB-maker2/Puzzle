@@ -19,7 +19,12 @@ def load_progress(filename):
             return json.load(f)
     else:
         # Initialize progress with default values
-        return {"unlocked_dates": [], "last_unlocked_piece": None, "first_piece_unlocked": False, "unlock_order": []}
+        return {
+            "unlocked_dates": [],
+            "last_unlocked_piece": None,
+            "first_piece_unlocked": False,
+            "unlock_order": []  # Ensure this is initialized
+        }
 
 # Helper function to save progress to a JSON file
 def save_progress(filename, data):
@@ -53,15 +58,13 @@ if 'unlocked_dates' not in st.session_state:
 if 'last_unlocked_piece' not in st.session_state:
     st.session_state['last_unlocked_piece'] = progress_data.get("last_unlocked_piece", None)
 
-if 'unlock_order' not in st.session_state:
-    # Check if an unlock order was saved
-    if progress_data['unlock_order']:
-        st.session_state['unlock_order'] = progress_data['unlock_order']
-    else:
-        # Set a randomized order for unlocking the pieces, skipping the first piece
-        remaining_indices = list(range(1, len(st.session_state['puzzle_pieces'])))
-        random.shuffle(remaining_indices)
-        st.session_state['unlock_order'] = remaining_indices
+if 'unlock_order' in progress_data and progress_data['unlock_order']:
+    st.session_state['unlock_order'] = progress_data['unlock_order']
+else:
+    # Set a randomized order for unlocking the pieces, skipping the first piece
+    remaining_indices = list(range(1, len(st.session_state['puzzle_pieces'])))
+    random.shuffle(remaining_indices)
+    st.session_state['unlock_order'] = remaining_indices
 
 # Load the dictionary of secret words from the JSON file
 secret_words = load_secret_words('secret_words.json')
