@@ -67,7 +67,7 @@ if 'puzzle_pieces' not in st.session_state:
 
     # Unlock previously unlocked pieces based on saved progress
     for date in progress_data['unlocked_dates']:
-        if date in progress_data['piece_mapping']:
+        if date in progress_data.get('piece_mapping', {}):  # Use get to avoid KeyError
             idx = progress_data['piece_mapping'][date]  # Use piece mapping for the index
             st.session_state['puzzle_pieces'][idx]["unlocked"] = True
 
@@ -80,7 +80,7 @@ if 'last_unlocked_piece' not in st.session_state:
 
 # Set a randomized order for unlocking pieces if it's not already set
 if 'unlock_order' not in st.session_state:
-    if progress_data['unlock_order']:
+    if progress_data.get('unlock_order'):  # Use get to avoid KeyError
         st.session_state['unlock_order'] = progress_data['unlock_order']
     else:
         # Set a randomized order for unlocking the pieces, skipping the first piece
@@ -90,7 +90,7 @@ if 'unlock_order' not in st.session_state:
 
 # Create a piece mapping if it doesn't exist
 if 'piece_mapping' not in st.session_state:
-    if progress_data['piece_mapping']:
+    if progress_data.get('piece_mapping'):  # Use get to avoid KeyError
         st.session_state['piece_mapping'] = progress_data['piece_mapping']
     else:
         # Map dates to pieces randomly, skipping the first piece
@@ -98,7 +98,13 @@ if 'piece_mapping' not in st.session_state:
             if len(st.session_state['piece_mapping']) < len(st.session_state['puzzle_pieces']) - 1:
                 piece_index = st.session_state['unlock_order'].pop(0)  # Get the next random piece index
                 st.session_state['piece_mapping'][date] = piece_index  # Map date to piece
-        save_progress(progress_file, progress_data)  # Save initial mapping
+        save_progress(progress_file, {
+            "unlocked_dates": st.session_state['unlocked_dates'],
+            "last_unlocked_piece": st.session_state['last_unlocked_piece'],
+            "first_piece_unlocked": True,
+            "unlock_order": st.session_state['unlock_order'],
+            "piece_mapping": st.session_state['piece_mapping']
+        })  # Save initial mapping
 
 # Determine the next unlockable date
 next_unlock_date = next((date for date in sorted_dates if date not in st.session_state['unlocked_dates']), None)
