@@ -25,8 +25,9 @@ def load_progress(filename):
         return {
             "unlocked_dates": [],
             "last_unlocked_piece": None,
-            "first_piece_unlocked": False,
-            "unlock_order": []  # Ensure this is initialized
+            "first_piece_unlocked": True,  # Start with the first piece unlocked
+            "unlock_order": [],
+            "piece_mapping": {}  # To map dates to specific pieces
         }
 
 # Helper function to save progress to a JSON file
@@ -40,8 +41,9 @@ def reset_progress():
     default_progress = {
         "unlocked_dates": [],
         "last_unlocked_piece": None,
-        "first_piece_unlocked": False,
-        "unlock_order": []  # Ensure this is initialized
+        "first_piece_unlocked": True,  # Keep the first piece marked as unlocked
+        "unlock_order": [],
+        "piece_mapping": {}  # Clear piece mappings
     }
     save_progress(progress_file, default_progress)
 
@@ -59,14 +61,15 @@ if 'puzzle_pieces' not in st.session_state:
     # Create a list of pieces in their correct positions
     st.session_state['puzzle_pieces'] = [{"url": f"pieces/piece_{i+1}_{j+1}.png", "unlocked": False} for i in range(7) for j in range(12)]
 
-    # Unlock the first piece if it has been marked as unlocked in progress_data
+    # Unlock the first piece since it's always a given
     if progress_data["first_piece_unlocked"]:
         st.session_state['puzzle_pieces'][0]["unlocked"] = True  # Unlock the first piece
 
     # Unlock previously unlocked pieces based on saved progress
     for date in progress_data['unlocked_dates']:
-        idx = sorted_dates.index(date)  # Use sorted_dates instead of index directly
-        st.session_state['puzzle_pieces'][idx]["unlocked"] = True
+        if date in progress_data['piece_mapping']:
+            idx = progress_data['piece_mapping'][date]  # Use piece mapping for the index
+            st.session_state['puzzle_pieces'][idx]["unlocked"] = True
 
 # Load unlocked dates into session state
 if 'unlocked_dates' not in st.session_state:
@@ -75,6 +78,7 @@ if 'unlocked_dates' not in st.session_state:
 if 'last_unlocked_piece' not in st.session_state:
     st.session_state['last_unlocked_piece'] = progress_data.get("last_unlocked_piece", None)
 
+# Set a randomized order for unlocking pieces if it's not already set
 if 'unlock_order' not in st.session_state:
     if progress_data['unlock_order']:
         st.session_state['unlock_order'] = progress_data['unlock_order']
@@ -83,6 +87,18 @@ if 'unlock_order' not in st.session_state:
         remaining_indices = list(range(1, len(st.session_state['puzzle_pieces'])))
         random.shuffle(remaining_indices)
         st.session_state['unlock_order'] = remaining_indices
+
+# Create a piece mapping if it doesn't exist
+if 'piece_mapping' not in st.session_state:
+    if progress_data['piece_mapping']:
+        st.session_state['piece_mapping'] = progress_data['piece_mapping']
+    else:
+        # Map dates to pieces randomly, skipping the first piece
+        for date in sorted_dates:
+            if len(st.session_state['piece_mapping']) < len(st.session_state['puzzle_pieces']) - 1:
+                piece_index = st.session_state['unlock_order'].pop(0)  # Get the next random piece index
+                st.session_state['piece_mapping'][date] = piece_index  # Map date to piece
+        save_progress(progress_file, progress_data)  # Save initial mapping
 
 # Determine the next unlockable date
 next_unlock_date = next((date for date in sorted_dates if date not in st.session_state['unlocked_dates']), None)
@@ -105,7 +121,8 @@ def check_word(input_word, unlock_date):
                 "unlocked_dates": st.session_state['unlocked_dates'],
                 "last_unlocked_piece": st.session_state['last_unlocked_piece'],
                 "first_piece_unlocked": True,  # Ensure first piece remains marked as unlocked
-                "unlock_order": st.session_state['unlock_order']  # Save the updated unlock order
+                "unlock_order": st.session_state['unlock_order'],  # Save the updated unlock order
+                "piece_mapping": st.session_state['piece_mapping']  # Save the piece mapping
             })
         
             return True  # Indicate a successful unlock
