@@ -15,12 +15,18 @@ def load_secret_words(filename):
 # Set the path for progress.json in your repository
 progress_file = 'progress.json'  # You can specify the full path here if needed
 
+# Initialize session state for success message
+if 'success_message' not in st.session_state:
+    st.session_state.success_message = ""
+
 # Function to handle word submission
 def handle_submission():
     input_word = st.session_state.input_word  # Access the text input value
     if check_word(input_word, next_unlock_date):
-        st.success("Correct! A new piece has been unlocked.")
-        refresh_page()  # Refresh the page
+        st.session_state.success_message = "Correct! A new piece has been unlocked."
+        # No need to call st.rerun() here; we will display the message below
+    else:
+        st.session_state.success_message = "Incorrect word mahal ko. Try again!"
 
 # Helper function to load saved state from a JSON file
 def load_progress(filename):
@@ -155,6 +161,10 @@ def check_word(input_word, unlock_date):
 # Title of the app
 st.title("Unlock the Puzzle Mahal! ❤️🧩")
 
+# Display the success message if it exists
+if st.session_state.success_message:
+    st.success(st.session_state.success_message)
+
 # Check if all pieces are unlocked
 all_unlocked = all(piece["unlocked"] for piece in st.session_state['puzzle_pieces'])
 
@@ -167,6 +177,10 @@ if next_unlock_date and not all_unlocked:
         st.info("Great job today mahal! Come back tomorrow for more!")
 else:
     st.info("Great job today mahal! Come back tomorrow for more!")
+
+# Reset the success message for the next interaction
+if st.session_state.success_message and st.session_state.input_word:
+    st.session_state.success_message = ""
 
 if all_unlocked:
     # Show the complete image if all pieces are unlocked
