@@ -91,20 +91,26 @@ if 'unlock_order' not in st.session_state:
         random.shuffle(remaining_indices)
         st.session_state['unlock_order'] = remaining_indices
 
-# Create piece mapping if it doesn't exist
-if len(st.session_state['piece_mapping']) == 0:  # Only create if empty
+# Ensure the first piece is mapped correctly
+if "01/01/2000" not in st.session_state['piece_mapping']:  # Replace with the actual first date
+    st.session_state['piece_mapping']["01/01/2000"] = 0  # Map the first date to the first piece
+
+# Create piece mapping if it doesn't exist for the rest of the dates
+if len(st.session_state['piece_mapping']) < len(sorted_dates):
     for date in sorted_dates:
-        if len(st.session_state['piece_mapping']) < len(st.session_state['puzzle_pieces']) - 1:
-            piece_index = st.session_state['unlock_order'].pop(0)  # Get the next random piece index
-            st.session_state['piece_mapping'][date] = piece_index  # Map date to piece
-    # Save initial mapping after creation
-    save_progress(progress_file, {
-        "unlocked_dates": st.session_state['unlocked_dates'],
-        "last_unlocked_piece": st.session_state['last_unlocked_piece'],
-        "first_piece_unlocked": True,
-        "unlock_order": st.session_state['unlock_order'],
-        "piece_mapping": st.session_state['piece_mapping']
-    })
+        if date not in st.session_state['piece_mapping']:
+            if st.session_state['unlock_order']:
+                piece_index = st.session_state['unlock_order'].pop(0)  # Get the next random piece index
+                st.session_state['piece_mapping'][date] = piece_index  # Map date to piece
+
+# Save initial mapping after creation
+save_progress(progress_file, {
+    "unlocked_dates": st.session_state['unlocked_dates'],
+    "last_unlocked_piece": st.session_state['last_unlocked_piece'],
+    "first_piece_unlocked": True,
+    "unlock_order": st.session_state['unlock_order'],
+    "piece_mapping": st.session_state['piece_mapping']
+})
 
 # Determine the next unlockable date
 next_unlock_date = next((date for date in sorted_dates if date not in st.session_state['unlocked_dates']), None)
@@ -116,11 +122,15 @@ today = datetime.datetime.now().strftime("%m/%d/%Y")
 def check_word(input_word, unlock_date):
     if input_word.lower() == secret_words.get(unlock_date, "").lower():
         # Unlock the next piece in the random order
-        if st.session_state['unlock_order']:
-            next_piece_index = st.session_state['unlock_order'].pop(0)  # Get the next random piece index
-            st.session_state['puzzle_pieces'][next_piece_index]["unlocked"] = True
-            st.session_state['unlocked_dates'].append(unlock_date)  # Track unlocked date
-            st.session_state['last_unlocked_piece'] = st.session_state['puzzle_pieces'][next_piece_index]["url"]
+        if unlock_date in st.session_state['piece_mapping']:
+            piece_index = st.session_state['piece_mapping'][unlock_date]
+            st.session_state['puzzle_pieces'][piece_index]["unlocked"] = True
+            
+            # Add to unlocked dates if it's not already there
+            if unlock_date not in st.session_state['unlocked_dates']:
+                st.session_state['unlocked_dates'].append(unlock_date)  # Track unlocked date
+            
+            st.session_state['last_unlocked_piece'] = st.session_state['puzzle_pieces'][piece_index]["url"]
 
             # Save the updated progress
             save_progress(progress_file, {
@@ -132,6 +142,7 @@ def check_word(input_word, unlock_date):
             })
         
             return True  # Indicate a successful unlock
+    st.error("Incorrect word. Please try again.")
     return False  # Incorrect word
 
 # Title of the app
