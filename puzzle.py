@@ -35,11 +35,10 @@ if 'puzzle_pieces' not in st.session_state:
     # Create a list of pieces in their correct positions
     st.session_state['puzzle_pieces'] = [{"url": f"pieces/piece_{i+1}_{j+1}.png", "unlocked": False} for i in range(7) for j in range(12)]
 
-    # Unlock the first piece only if it hasn't been unlocked before
-    if not progress_data.get("first_piece_unlocked", False):
-        st.session_state['puzzle_pieces'][0]["unlocked"] = True  # Unlock the first piece
-        progress_data["first_piece_unlocked"] = True  # Mark the first piece as unlocked
-        save_progress(progress_file, progress_data)  # Save this update to prevent re-unlocking
+    # Unlock the first piece
+    st.session_state['puzzle_pieces'][0]["unlocked"] = True  # Unlock the first piece
+    progress_data["first_piece_unlocked"] = True  # Mark the first piece as unlocked
+    save_progress(progress_file, progress_data)  # Save this update to prevent re-unlocking
 
     # Unlock previously unlocked pieces based on saved progress
     for date in progress_data['unlocked_dates']:
