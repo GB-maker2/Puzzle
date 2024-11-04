@@ -15,6 +15,13 @@ def load_secret_words(filename):
 # Set the path for progress.json in your repository
 progress_file = 'progress.json'  # You can specify the full path here if needed
 
+# Function to handle word submission
+def handle_submission():
+    input_word = st.session_state.input_word  # Access the text input value
+    if check_word(input_word, next_unlock_date):
+        st.success("Correct! A new piece has been unlocked.")
+        refresh_page()  # Refresh the page
+
 # Helper function to load saved state from a JSON file
 def load_progress(filename):
     if os.path.exists(filename):
@@ -142,11 +149,11 @@ def check_word(input_word, unlock_date):
             })
         
             return True  # Indicate a successful unlock
-    st.error("Incorrect word. Please try again.")
+    st.error("Incorrect word mahal ko. Try again!")
     return False  # Incorrect word
 
 # Title of the app
-st.title("Unlock the Puzzle Mahal!")
+st.title("Unlock the Puzzle Mahal! ❤️🧩")
 
 # Check if all pieces are unlocked
 all_unlocked = all(piece["unlocked"] for piece in st.session_state['puzzle_pieces'])
@@ -154,12 +161,8 @@ all_unlocked = all(piece["unlocked"] for piece in st.session_state['puzzle_piece
 if next_unlock_date and not all_unlocked:
     # Check if the next unlockable date is today or earlier
     if datetime.datetime.strptime(next_unlock_date, "%m/%d/%Y") <= datetime.datetime.strptime(today, "%m/%d/%Y"):
-        input_word = st.text_input(f"Enter the secret word for {next_unlock_date}:")
-        if st.button("Submit"):
-            if check_word(input_word, next_unlock_date):
-                st.success("Correct! A new piece has been unlocked.")
-                refresh_page()  # Refresh the page
-
+        # Use on_change to call the handle_submission function
+        input_word = st.text_input(f"Enter the secret word for {next_unlock_date}:", key="input_word", on_change=handle_submission)
     else:
         st.info("Great job today mahal! Come back tomorrow for more!")
 else:
