@@ -50,6 +50,7 @@ def save_progress(filename, data):
         json.dump(data, f)
 
 # Reset progress function
+# Reset progress function
 def reset_progress():
     # Reset to default values
     default_progress = {
@@ -60,6 +61,17 @@ def reset_progress():
         "piece_mapping": {}  # Clear piece mappings
     }
     save_progress(progress_file, default_progress)
+
+    # Clear session state variables related to progress
+    st.session_state['puzzle_pieces'] = [{"url": f"pieces/piece_{i+1}_{j+1}.png", "unlocked": False} for i in range(7) for j in range(12)]
+    st.session_state['piece_mapping'] = {}
+    st.session_state['unlocked_dates'] = []
+    st.session_state['last_unlocked_piece'] = None
+    st.session_state['unlock_order'] = []
+    
+    # Reset messages
+    st.session_state.success_message = ""
+    st.session_state.error_message = ""
 
 # Initialize or load persistent data
 progress_data = load_progress(progress_file)
@@ -207,5 +219,5 @@ else:
 # Add a button to reset progress
 if st.button("Reset Progress"):
     reset_progress()
-    st.success("Progress has been reset!")
-    refresh_page()  # Refresh the page after resetting to reflect changes
+    st.info("Progress has been reset")  # Show a success message after resetting
+
