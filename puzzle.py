@@ -63,13 +63,13 @@ if 'unlock_order' not in st.session_state:
 secret_words = load_secret_words('secret_words.json')
 
 # Sort dates in chronological order (day/month/year format)
-sorted_dates = sorted(secret_words.keys(), key=lambda date: datetime.datetime.strptime(date, "%d/%m/%Y"))
+sorted_dates = sorted(secret_words.keys(), key=lambda date: datetime.datetime.strptime(date, "%m/%d/%Y"))
 
 # Determine the next unlockable date
 next_unlock_date = next((date for date in sorted_dates if date not in st.session_state['unlocked_dates']), None)
 
 # Today's date
-today = datetime.datetime.now().strftime("%d/%m/%Y")
+today = datetime.datetime.now().strftime("%m/%d/%Y")
 
 # Function to check if the input word matches the secret word for a specific date
 def check_word(input_word, unlock_date):
@@ -98,7 +98,7 @@ all_unlocked = all(piece["unlocked"] for piece in st.session_state['puzzle_piece
 
 if next_unlock_date and not all_unlocked:
     # Check if the next unlockable date is today or earlier
-    if datetime.datetime.strptime(next_unlock_date, "%d/%m/%Y") <= datetime.datetime.strptime(today, "%d/%m/%Y"):
+    if datetime.datetime.strptime(next_unlock_date, "%m/%d/%Y") <= datetime.datetime.strptime(today, "%m/%d/%Y"):
         st.write(f"Unlock the piece from {next_unlock_date}:")
         input_word = st.text_input(f"Enter the secret word for {next_unlock_date}:")
         if st.button("Submit"):
