@@ -59,11 +59,9 @@ if 'puzzle_pieces' not in st.session_state:
     # Create a list of pieces in their correct positions
     st.session_state['puzzle_pieces'] = [{"url": f"pieces/piece_{i+1}_{j+1}.png", "unlocked": False} for i in range(7) for j in range(12)]
 
-    # Unlock the first piece if it hasn't been unlocked yet
-    if not progress_data["first_piece_unlocked"]:
+    # Unlock the first piece if it has been marked as unlocked in progress_data
+    if progress_data["first_piece_unlocked"]:
         st.session_state['puzzle_pieces'][0]["unlocked"] = True  # Unlock the first piece
-        progress_data["first_piece_unlocked"] = True  # Mark the first piece as unlocked
-        save_progress(progress_file, progress_data)  # Save this update
 
     # Unlock previously unlocked pieces based on saved progress
     for date in progress_data['unlocked_dates']:
@@ -116,19 +114,12 @@ def check_word(input_word, unlock_date):
 # Title of the app
 st.title("Unlock the Puzzle Mahal!")
 
-# Add a button to reset progress
-if st.button("Reset Progress"):
-    reset_progress()
-    st.success("Progress has been reset!")
-    refresh_page()  # Refresh the page after resetting to reflect changes
-
 # Check if all pieces are unlocked
 all_unlocked = all(piece["unlocked"] for piece in st.session_state['puzzle_pieces'])
 
 if next_unlock_date and not all_unlocked:
     # Check if the next unlockable date is today or earlier
     if datetime.datetime.strptime(next_unlock_date, "%m/%d/%Y") <= datetime.datetime.strptime(today, "%m/%d/%Y"):
-        st.write(f"Unlock the piece from {next_unlock_date}:")
         input_word = st.text_input(f"Enter the secret word for {next_unlock_date}:")
         if st.button("Submit"):
             if check_word(input_word, next_unlock_date):
@@ -159,3 +150,9 @@ else:
                     # Display a specific placeholder for each locked piece
                     placeholder_path = f"pieces/placeholder_{idx + 1}.png"
                     cols_images[j].image(placeholder_path, use_column_width=True)
+
+# Add a button to reset progress
+if st.button("Reset Progress"):
+    reset_progress()
+    st.success("Progress has been reset!")
+    refresh_page()  # Refresh the page after resetting to reflect changes
